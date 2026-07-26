@@ -7,3 +7,63 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Role {
+  COACH
+  ADMIN
+}
+
+model User {
+  id            Int    @id @default(autoincrement())
+  name          String
+  email         String @unique
+  password      String
+  role          Role
+  bankName      String
+  accountType   String
+  accountNumber String
+  timesheets Timesheet[]
+}
+
+enum Stage{
+  STAGING
+  SUBMITTED
+  APPROVED
+}
+
+model Timesheet{
+  id Int @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id]) //I think im los
+  createdDate DateTime @default(now())
+  submittedDate DateTime?
+  periodMonth DateTime 
+  stage Stage @default(STAGING)
+  adminMessage String?
+  paid Boolean @default(false)
+  timesheetEntry TimesheetEntry[]
+}
+
+enum ActivityType{
+  TRAINING
+  MATCH
+  REF_KIDS
+  REF_ADULT
+  MISC
+}
+
+model TimesheetEntry {
+  id Int @id @default(autoincrement())
+  timesheetId Int
+  timesheet Timesheet @relation(fields: [timesheetId], references: [id])
+  date DateTime 
+  activityType ActivityType
+  amount Decimal
+  description String?
+}
+
+model LookupActivity{
+  id Int @id @default(autoincrement())
+  activity ActivityType @unique
+  price Decimal
+}
