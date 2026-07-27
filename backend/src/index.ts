@@ -8,6 +8,11 @@ app.use(express.json());
 app.use(cookieParser());
 const PORT = 3000;
 
+app.get('/', (req, res) => {
+  res.json({
+    message: "Working"
+  })
+})
 app.use('/auth', authRoute)
 
 app.listen(PORT, () => {
