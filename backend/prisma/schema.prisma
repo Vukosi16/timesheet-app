@@ -41,6 +41,7 @@ model Timesheet{
   adminMessage String?
   paid Boolean @default(false)
   timesheetEntry TimesheetEntry[]
+  @@unique([userId, periodMonth])
 }
 
 enum ActivityType{
