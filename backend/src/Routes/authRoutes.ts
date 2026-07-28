@@ -6,6 +6,8 @@ import adminMiddleware from '../Middleware/adminMiddleware';
 
 const router = Router();
 router.post('/login', authController.login);
-router.post('/register', authMiddleware, adminMiddleware ,authController.register)
+router.post('/register', authMiddleware, adminMiddleware ,authController.register);
+router.post('/logout', authController.logout);
+router.post('/changePassword', authMiddleware ,authController.changePassword)
 
 export default router;

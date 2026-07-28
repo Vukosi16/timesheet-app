@@ -26,7 +26,7 @@ const login = async (req: Request<{},{},requestBody, {}>, res: Response) => {
 
         if (!passwordMatch){
             return res.status(401).json({
-                message: "PasswordIssue"
+                message: "email or password is incorrect"
             })
         }
 
@@ -38,7 +38,7 @@ const login = async (req: Request<{},{},requestBody, {}>, res: Response) => {
 
         res.cookie('token', accessToken, { httpOnly: true });
         res.status(200).json({ 
-            message: 'Successful login',
+            message: 'Successful login'
         });
 
     }catch (e){
@@ -91,12 +91,67 @@ const register = async (req: Request<{}, {}, RegisterBody, {}>, res: Response) =
     //temp user created details:
     // "message": "User created",
     // "email": "vukosimohlabini@gmail.com",
-    // "tempPassword": "91c573216da5c768"
+    // "tempPass": "91c573216da5c768"
+    //"newPass": pass123
 
+
+}
+
+const logout = (req: Request, res: Response) => {
+    res.clearCookie('token');
+    res.status(200).json({
+        message: "Logged out successfully"
+    })
+}
+
+const changePassword = async (req: Request, res: Response) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.userInfo?.userId;
+
+        if (!userId) {
+            return res.status(401).json({ 
+                message: "Unauthenticated user" 
+            });
+        }
+
+        const user = await prisma.user.findUnique({ where: { id: userId } })
+        if (!user){
+            return res.status(404).json({ 
+                message: "User not found" 
+            });
+        }
+
+        const passwordCompare = await bcrypt.compare(currentPassword, user.password);
+        if (!passwordCompare){
+            return res.status(401).json({ 
+                message: "Unauthenticated user" 
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword },
+        });
+
+        res.status(200).json({
+            message: "Password changed",
+            data: newPassword
+        })
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: `${e}`,
+            message : "Couldn't change password, some error occured."
+        })
+    }
 
 }
 
 export default {
     login,
-    register
+    register,
+    logout,
+    changePassword
 };
