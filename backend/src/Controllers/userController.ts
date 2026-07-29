@@ -83,12 +83,12 @@ const viewAllCoaches = async(req: Request, res: Response) => {
 
         const coaches = await prisma.user.findMany({ where: { role: 'COACH' }, select: { 
             id: true,
-                name: true,
-                email: true,
-                role: true,
-                bankName: true,
-                accountType:true,
-                accountNumber: true,
+            name: true,
+            email: true,
+            role: true,
+            bankName: true,
+            accountType:true,
+            accountNumber: true,
          } })
          res.status(200).json({
             message: "Coaches are here", 
