@@ -41,6 +41,9 @@ const addBankDetails = async(req: Request, res: Response) => {
 const getUser = async(req: Request, res: Response) => {
     try {
         const userId = req.userInfo?.userId;
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthenticated user" });
+        }
 
         const user =  await prisma.user.findUnique({where: { id: userId },
             select : {
@@ -71,11 +74,41 @@ const getUser = async(req: Request, res: Response) => {
     }
 }
 
+const viewAllCoaches = async(req: Request, res: Response) => {
+    try {
+        const userId = req.userInfo?.userId;
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthenticated user" });
+        }
+
+        const coaches = await prisma.user.findMany({ where: { role: 'COACH' }, select: { 
+            id: true,
+                name: true,
+                email: true,
+                role: true,
+                bankName: true,
+                accountType:true,
+                accountNumber: true,
+         } })
+         res.status(200).json({
+            message: "Coaches are here", 
+            coaches
+         })
+
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: `${e}`,
+            message : "Couldn't fetch user details. Something went wrong"
+        })
+    }
+}
+
 
 
 
 export default {
     addBankDetails,
     getUser,
-    
+    viewAllCoaches
 }

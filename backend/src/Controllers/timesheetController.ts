@@ -10,7 +10,7 @@ const createTimesheet = async(req: Request, res: Response) => {
             return res.status(401).json({ message: "Unauthenticated user" });
         }
 
-        const {periodMonth} = req.body;
+        const {periodMonth} = req.body;//tko
         const inputDate = new Date(periodMonth);
         const normalizedPeriod = new Date(inputDate.getFullYear(), inputDate.getMonth(), 1);
 
@@ -47,7 +47,7 @@ const deleteTimesheet = async(req: Request, res: Response) => {
             return res.status(401).json({ message: "Unauthenticated user" });
         }
 
-        const timesheetId: number = Number(req.params.id);
+        const timesheetId = Number(req.params.timesheetId);//tko
 
         const timesheet = await prisma.timesheet.findUnique({ where: { id: timesheetId } })
         if (!timesheet) {
@@ -108,7 +108,7 @@ const getTimesheetById = async(req: Request, res: Response) => {
             return res.status(401).json({ message: "Unauthenticated user" });
         }
 
-        const timesheetId = Number(req.params.id);
+        const timesheetId = Number(req.params.timesheetId);//tko
         const timesheet = await prisma.timesheet.findUnique({ where: { id: timesheetId }, include: { timesheetEntry: true } })
 
         if (!timesheet){
@@ -141,7 +141,7 @@ const submitTimesheet = async(req: Request, res: Response) => {
             return res.status(401).json({ message: "Unauthenticated user" });
         }
 
-        const timesheetId = Number(req.params.id);
+        const timesheetId = Number(req.params.timesheetId);//tko
         const timesheet = await prisma.timesheet.findUnique({ where: { id: timesheetId }, include: { timesheetEntry: true } })
 
          if (!timesheet){
@@ -216,7 +216,7 @@ interface ReviewParams extends ParamsDictionary {
 
 const reviewTimesheet = async(req: Request<ReviewParams, {}, ReviewBody, {}>, res: Response) => {
    try {
-        const timesheetId = Number(req.params.id);
+        const timesheetId = Number(req.params.timesheetId);
         const { decision, adminMessage } = req.body;
 
         const timesheet = await prisma.timesheet.findUnique({ where: { id: timesheetId }, include: { timesheetEntry: true } })
@@ -225,7 +225,7 @@ const reviewTimesheet = async(req: Request<ReviewParams, {}, ReviewBody, {}>, re
         }  
 
         if (timesheet.stage !== "SUBMITTED") {
-            return res.status(403).json({ message: "Timesheet has already been submitted" });
+            return res.status(403).json({ message: "Timesheet has not been submitted" });
         }
 
          if (decision !== "APPROVE" && decision !== "REJECT") {
@@ -264,7 +264,7 @@ const reviewTimesheet = async(req: Request<ReviewParams, {}, ReviewBody, {}>, re
 
 const markPaid = async(req: Request, res: Response) => {
     try {
-        const timesheetId = Number(req.params.id);
+        const timesheetId = Number(req.params.timesheetId);
 
         const timesheet = await prisma.timesheet.findUnique({ where: { id: timesheetId }, include: { timesheetEntry: true } })
         if (!timesheet){
