@@ -9,7 +9,7 @@ const createEntry = async(req: Request, res: Response) => {
             return res.status(401).json({ message: "Unauthenticated user" });
         }
 
-        const timesheetId = Number(req.params.timesheetId);
+        const timesheetId = Number(req.params.timesheetId);//taken care of
         const timesheet = await prisma.timesheet.findUnique({ where: { id: timesheetId } })
         
         if (!timesheet) {
@@ -21,7 +21,7 @@ const createEntry = async(req: Request, res: Response) => {
 
         }
 
-        const {date, activityType, description } = req.body;
+        const {date, activityType, description } = req.body; //taken care of
         
         if (timesheet.userId !== userId){
             return res.status(403).json({
@@ -68,7 +68,67 @@ const editEntry = async(req: Request, res: Response) => {
             return res.status(401).json({ message: "Unauthenticated user" });
         }
 
-        const timesheetId = Number(req.params.timesheetId);
+        const timesheetId = Number(req.params.timesheetId);//taken care of
+        const timesheet = await prisma.timesheet.findUnique({ where: { id: timesheetId } })
+        
+        if (!timesheet) {
+            return res.status(404).json({ message: "Timesheet not found" });
+        }
+
+        if (timesheet.userId !== userId){
+            return res.status(403).json({
+                message: "Unauthorised user"
+            })
+        }
+
+        if (timesheet.stage !== 'STAGING'){
+            return res.status(403).json({ message: "Cannot edit the entry to timesheet" });
+
+        }
+
+        const entryId = Number(req.params.entryId);//taken care of
+
+        const timesheetEntry = await prisma.timesheetEntry.findUnique({ where: { id: entryId } })
+        if (!timesheetEntry){
+            return res.status(404).json({
+                message: "Entry not found"
+            })
+        }
+
+        if (timesheetEntry.timesheetId !== timesheetId){
+            return res.status(403).json({
+                message: "Entry doesn't belong to timesheet"
+            })
+        }
+
+        const { date, description } = req.body;//taken care of
+        const updatedEntry = await prisma.timesheetEntry.update({ where: { id: entryId }, data: { date: new Date(date), description } })
+
+        res.status(200).json({
+            message: "Entry Updated",
+            updatedEntry
+        })
+
+
+
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            error: `${e}`,
+            message : "Couldn't create a timesheet. Something went wrong"
+        })
+    }
+}
+
+const deleteEntry = async(req: Request, res: Response) => {
+    try {
+        const userId = req.userInfo?.userId;
+
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthenticated user" });
+        }
+
+        const timesheetId = Number(req.params.timesheetId);//taken care of
         const timesheet = await prisma.timesheet.findUnique({ where: { id: timesheetId } })
         
         if (!timesheet) {
@@ -86,7 +146,7 @@ const editEntry = async(req: Request, res: Response) => {
 
         }
 
-        const entryId = Number(req.params.entryId);
+        const entryId = Number(req.params.entryId);//taken care of
 
         const timesheetEntry = await prisma.timesheetEntry.findUnique({ where: { id: entryId } })
         if (!timesheetEntry){
@@ -101,15 +161,11 @@ const editEntry = async(req: Request, res: Response) => {
             })
         }
 
-        const { date, description } = req.body;
-        const updatedEntry = await prisma.timesheetEntry.update({ where: { id: entryId }, data: { date: new Date(date), description } })
-
-        res.status(200).json({
-            message: "Entry Updated",
-            updatedEntry
+        const deletedEntry = await prisma.timesheetEntry.delete({ where: { id: entryId } })
+        return res.status(200).json({
+            message: "Entry deleted",
+            deletedEntry
         })
-
-
 
     } catch (e) {
         console.log(e);
@@ -120,13 +176,8 @@ const editEntry = async(req: Request, res: Response) => {
     }
 }
 
-
-
-
-
-
-
 export default {
     createEntry,
-    editEntry
+    editEntry,
+    deleteEntry
 }
