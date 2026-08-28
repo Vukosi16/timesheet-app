@@ -1,0 +1,343 @@
+html, body{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+
+.pageContainer{
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.87);
+    display: flex;
+    flex-direction: column;
+}
+
+.welcomeHeadingContainer{
+    display: flex;
+    width: 100vw;
+    height: 15vh;
+}
+
+.headingTextContainer{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    justify-content: center;
+    margin-left: 50px;
+    color: aliceblue;
+}
+
+.welcomeHeadingText{
+    margin: 0;
+    font-size: 3em;
+    text-align: left;
+}
+
+.WelcomeHeadingDate{
+    margin: 0;
+    font-size: 1em;
+}
+
+.logOutBtnContainer{
+    display: flex;
+    width: 20%;
+    margin-left: auto;
+    margin-right: 20px;
+    justify-content: center;
+    align-items: center;
+}
+
+.logOutBtn{
+    display: flex;
+    width: 55%;
+    height: 50%;
+    border-radius: 14px;
+    align-items: center;
+    justify-content: center;
+    border-color: greenyellow;
+    color: greenyellow;
+    background-color:  rgba(0, 0, 0, 0.87);
+    cursor: pointer;
+}
+
+.logOutBtn:hover{
+    background-color: rgb(218, 160, 160);
+    color: black;
+    border: 2px solid red;
+}
+
+.stagedTimesheetContainer{
+    width: 100%;
+    height: 70%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+}
+
+.timesheetContainer{
+    width: 70%;
+    height: 90%;
+    background-color: rgba(0, 0, 0, 0.363);
+    border-radius: 12px;
+    border: 2px solid rgba(245, 244, 244, 0.555);
+}
+
+.timesheetInfoContainer{
+    width: 100%;
+    height: 20%;
+    display: flex;
+}
+
+.timesheetInfoTextContainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 50%;
+    height: 100%;
+    padding-left: 25px;
+    color: aliceblue;
+}
+
+.timesheetHeadingText{
+    margin: 0;
+    font-size: 1.05em;
+}
+
+.timesheetPeriodMonth{
+    margin: 0;
+    font-size: 2em;
+    font-weight: 900;
+}
+
+.timesheetStageContainer{
+    margin-left: auto;
+    width: 15%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.stageText{
+    border: 1px solid greenyellow;
+    padding: 10px;
+    border-radius: 12px;
+    color: rgb(101, 165, 4);
+    background-color: antiquewhite;
+    font-weight: 600;
+}
+
+.timesheetDataContainer{
+    width: 100%;
+    height: 25%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.earningsData, .EntriesData{
+    width: 40%;
+    height: 90%;
+    background-color:rgba(0, 0, 0, 0.089);
+    padding-left: 15px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    border-radius: 12px;
+    border: 3px solid black;
+}
+
+.earningsText, .entriesText{
+    font-size: 1.05em;
+    margin: 0;
+}
+
+.earningsAmount, .entriesAmount{
+    font-size: 2em;
+    margin: 0;
+}
+
+/* Table css */
+.entriesContainer{
+    width: 100%;
+    height: 40%;
+    background-color: rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.entriesTable{
+    width: calc(100% - 32px);
+    height: auto;
+    border-collapse: collapse;
+    color: #c9c8c2;
+    font-size: 0.95em;
+    table-layout: auto;
+}
+
+.entriesTable th,
+.entriesTable td{
+    height: 32px;
+    padding: 0 6px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.entriesTable th{
+    color: #c9c8c2;
+    font-weight: 700;
+}
+
+.entriesTable tbody tr{
+    border-top: 1px solid rgba(201, 200, 194, 0.18);
+}
+
+.entriesTable th:nth-child(1),
+.entriesTable td:nth-child(1){
+    width: 10%;
+}
+
+.entriesTable th:nth-child(2),
+.entriesTable td:nth-child(2){
+    width: 16%;
+}
+
+.entriesTable th:nth-child(3),
+.entriesTable td:nth-child(3){
+    width: 48%;
+}
+
+.entriesTable th:nth-child(4),
+.entriesTable td:nth-child(4){
+    width: 14%;
+    text-align: right;
+}
+
+.entriesTable th:nth-child(5),
+.entriesTable td:nth-child(5),
+.entriesTable th:nth-child(6),
+.entriesTable td:nth-child(6){
+    width: 28px;
+    min-width: 28px;
+    text-align: center;
+}
+
+.entriesTable td:nth-last-child(-n + 2){
+    overflow: visible;
+}
+
+.entriesTable td strong{
+    color: #f0efeb;
+    font-weight: 700;
+}
+
+.entriesTable td button{
+    width: 24px;
+    height: 24px;
+    padding: 3px;
+    border: 0;
+    color: #c9c8c2;
+    background: transparent;
+    cursor: pointer;
+}
+
+.entriesTable td button:hover{
+    color: #ffffff;
+}
+
+.entriesTable td button svg{
+    width: 15px;
+    height: 15px;
+    stroke-width: 2.5;
+}
+
+/* Table styles end */
+
+.timeesheetOps{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 15%;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.addEntryBtn{
+    width: 20%;
+    height: 70%;
+    border-radius: 12px;
+    border: 1px solid greenyellow;
+    color: greenyellow;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    font-size: large;
+    background-color:  rgba(0, 0, 0, 0.603);
+    cursor: pointer;
+}
+
+.addEntryBtn:hover{
+    color: white;
+    border: 1px solid white;
+}
+
+.submitTimesheetBtn{
+    width: 20%;
+    height: 70%;
+    border-radius: 12px;
+    border: 1px solid rgb(255, 47, 47);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    font-size: large;
+    background-color:   rgb(255, 47, 47);
+    cursor: pointer;
+}
+
+.submitTimesheetBtn:hover{
+    border: 2px solid greenyellow;
+    color: black;
+    background-color: antiquewhite;
+}
+
+.timesheetViewandcreation{
+    width: 100%;
+    height: 15%;
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+}
+
+.createTimesheetBtn, .viewTimesheetsBtn{
+    width: 20%;
+    height: 60%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background-color: rgba(0, 0, 0, 0.479);
+    border-radius: 12px;
+    border: 2px solid white;
+    cursor: pointer;
+}
+
+.createTimesheetBtn:hover, .viewTimesheetsBtn:hover{
+     border: 5px solid black;
+     color: black;
+     background-color: white;
+}
+
+
+

@@ -37,3 +37,8 @@ export async function logout() {
   return apiRequest('/auth/logout', { method: 'POST' });
 }
 
+export async function getCoachTimesheets() {
+  return apiRequest('/timesheet/timesheets', {
+    method: 'GET',
+  })
+}
