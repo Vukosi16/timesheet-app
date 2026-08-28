@@ -10,9 +10,21 @@ const createTimesheet = async(req: Request, res: Response) => {
             return res.status(401).json({ message: "Unauthenticated user" });
         }
 
-        const {periodMonth} = req.body;//tko
+        const existingStaging = await prisma.timesheet.findFirst({
+            where: { userId, stage: 'STAGING'}
+        });
+
+        if (existingStaging) {
+            return res.status(409).json({
+                message: "You already have an unsubmitted timesheet."
+            })
+        }
+
+        const {periodMonth} = req.body;
         const inputDate = new Date(periodMonth);
         const normalizedPeriod = new Date(inputDate.getFullYear(), inputDate.getMonth(), 1);
+
+
 
         let newTimesheet;
 
