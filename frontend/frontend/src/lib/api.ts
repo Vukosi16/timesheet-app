@@ -42,3 +42,9 @@ export async function getCoachTimesheets() {
     method: 'GET',
   })
 }
+
+export async function submitTimesheet(timesheetId : number) {
+  return apiRequest(`/timesheet/submit/${timesheetId}`, {
+    method: 'PATCH',
+  })
+}
