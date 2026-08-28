@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../context/authContext';
-import { getCoachTimesheets } from '../lib/api';
+import { getCoachTimesheets, submitTimesheet } from '../lib/api';
 import '../styles/coachDashboardPage.css'
 import { LogOut, Pencil, Trash, Plus, Send, FilePlus, TableOfContents   } from 'lucide-react';
 
 
 
 function CoachDashboardPage() {
-    const { user, loading } = useAuth();
+    const { user, loading, logout } = useAuth();
+    const navigate = useNavigate();
 
     interface Timesheet {
         userId: number;
@@ -18,16 +20,21 @@ function CoachDashboardPage() {
         stage: 'STAGING' | 'SUBMITTED' | 'APPROVED';
         adminMessage: string | null;
         paid: boolean;
+        timesheetEntry: TimesheetEntries[];
     }
 
     interface TimesheetEntries {
-
+        date: string;
+        activityType:'TRAINING'| 'MATCH'| 'REF_KIDS' | 'REF_ADULT';
+        description: string | null;
+        amount: number | string;
+        id: number;
+        timesheetId: number;
     }
 
     const [timesheets, setTimesheets] = useState<Timesheet[] | null>(null);
 
-    useEffect(() => {
-        async function fetchTimesheets() {
+    const fetchTimesheets = async function () {
              try {
                 const result = await getCoachTimesheets();      
                 
@@ -38,7 +45,7 @@ function CoachDashboardPage() {
                 console.error(error)    
             }
         }
-
+    useEffect(() => {
         fetchTimesheets()
     }, []); 
 
@@ -49,13 +56,38 @@ function CoachDashboardPage() {
     }
 
     if (!user) {
-        <p>Cant view this. You need to log in</p>
+        navigate('/');
         
     }else if (user.role !== 'COACH') {
-        <p>Cant view this. You need to log in</p>
+        navigate('/');
     }
 
-    const currentTimesheet = timesheets?.find((ts) => ts.stage === 'STAGING')
+    const handleLogout = async () => {
+        try {
+            await logout()
+            navigate('/');
+        } catch (error) {
+            console.error("Issue logging out")
+        }
+    }
+
+    const handleSubmit = async (timesheetId: number) => {
+        try {
+            await submitTimesheet(timesheetId);
+            await fetchTimesheets();
+            alert("submitted!");
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const currentTimesheet = timesheets?.find((ts) => ts.stage === 'STAGING');    
+    const currentTimesheetEntries = currentTimesheet?.timesheetEntry;
+    const totalEarnings = currentTimesheetEntries?.reduce(
+        (total, entry) => total + Number(entry.amount),
+        0
+    ) ?? 0;
+    
     
     const today = new Date();
     const formattedDate = today.toLocaleDateString('en-GB', {
@@ -83,15 +115,15 @@ function CoachDashboardPage() {
                     </div>
 
                     <div className="logOutBtnContainer">
-                        <button className="logOutBtn">
+                        <button className="logOutBtn" onClick={handleLogout}>
                             <LogOut/> Log Out
                         </button>
                     </div>
                     
                 </div>
 
-                
-                <div className="stagedTimesheetContainer">
+                {currentTimesheet ? (
+                <div className="stagedTimesheetContainer" key={currentTimesheet.id}>
                     
                     <div className="timesheetContainer">
                         
@@ -99,11 +131,16 @@ function CoachDashboardPage() {
                             
                             <div className="timesheetInfoTextContainer">
                                 <p className='timesheetHeadingText'>Current timesheet</p>
-                                <h3 className="timesheetPeriodMonth">July 2026</h3>
+                                <h3 className="timesheetPeriodMonth">
+                                    {new Date(currentTimesheet.periodMonth).toLocaleDateString('en-US', {
+                                        month: 'long',
+                                        year: 'numeric'
+                                    })}
+                                </h3>
                             </div>
 
                             <div className="timesheetStageContainer">
-                                <p className="stageText">Staging</p>
+                                <p className="stageText">{currentTimesheet.stage}</p>
                             </div>
                         
                         </div>
@@ -111,16 +148,17 @@ function CoachDashboardPage() {
                         <div className="timesheetDataContainer">
                             <div className="earningsData">
                                 <p className='earningsText'>Total Earnings</p>
-                                <p className="earningsAmount">R2000</p>
+                                <p className="earningsAmount">R{totalEarnings}</p>
                             </div>
 
                             <div className="EntriesData">
                                  <p className='entriesText'>Entries Logged</p>
-                                <p className="entriesAmount">8</p>
+                                <p className="entriesAmount">{currentTimesheetEntries?.length ?? 0}</p>
                             </div>
                         </div>
 
-                        <div className="entriesContainer">
+                        {currentTimesheetEntries ? (
+                                                    <div className="entriesContainer">
 
                             <table className="entriesTable">
                                 <thead>
@@ -133,63 +171,40 @@ function CoachDashboardPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td><strong>2 Jul</strong></td>
-                                        <td><strong>Training</strong></td>
-                                        <td>u/15 and u/17 Goalkeepers</td>
-                                        <td>R250</td>
-                                        <td> 
-                                            <button>
-                                                <Pencil/>
-                                            </button>  
-                                        </td>
-                                        <td> 
-                                            <button>
-                                                <Trash/>
-                                            </button>  
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>2 Jul</strong></td>
-                                        <td><strong>Training</strong></td>
-                                        <td>u/15 and u/17 Goalkeepers</td>
-                                        <td>R250</td>
-                                        <td> 
-                                            <button>
-                                                <Pencil/>
-                                            </button>  
-                                        </td>
-                                        <td> 
-                                            <button>
-                                                <Trash/>
-                                            </button>  
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>2 Jul</strong></td>
-                                        <td><strong>Training</strong></td>
-                                        <td>u/15 and u/17 Goalkeepers</td>
-                                        <td>R250</td>
-                                        <td> 
-                                            <button>
-                                                <Pencil/>
-                                            </button>  
-                                        </td>
-                                        <td> 
-                                            <button>
-                                                <Trash/>
-                                            </button>  
-                                        </td>
-                                    </tr>
+                                    { currentTimesheetEntries.slice(-3).reverse().map( (entry) => {
+                                        return(
+                                            <tr key={entry.id}>
+                                                <td><strong>{new Date(entry.date).toLocaleString('en-GB', { day: 'numeric', month: 'long'})}</strong></td>
+                                                <td><strong>{entry.activityType}</strong></td>
+                                                <td>{entry.description}</td>
+                                                <td>R{entry.amount}</td>
+                                                <td> 
+                                                    <button>
+                                                        <Pencil/>
+                                                    </button>  
+                                                </td>
+                                                <td> 
+                                                    <button>
+                                                        <Trash/>
+                                                    </button>  
+                                                </td>
+                                            </tr>
+                                        )
+                                        
+                                    })}
                                 </tbody>
                             </table>
                         </div>
+                        ) : 
+                            <p>No entries</p>
+                        }
+
 
                         <div className="timeesheetOps">
                             <button className="addEntryBtn">
                                 <Plus/> Add Entry
                             </button>
-                            <button className="submitTimesheetBtn">
+                            <button className="submitTimesheetBtn" onClick={() => handleSubmit(currentTimesheet.id)}>
                                 <Send/> Submit timesheet
                             </button>
                         </div>
@@ -200,36 +215,28 @@ function CoachDashboardPage() {
                     
                     </div>
                 </div>
+                ) : 
+                    <div className="noTimesheetContainer">
+                        <h1 className="noTimesheetHeading">
+                            No Timesheet currently in staging
+                        </h1>
+                        <p className="noTimesheetText">
+                            Create a new timesheet for the month to add it to staging.
+                        </p>
+                    </div>
+                }
+
 
                 <div className="timesheetViewandcreation">
                     <button className="createTimesheetBtn">
-                        <FilePlus/> Create new timesheet
+                        <FilePlus/> &nbsp; Create new timesheet
                     </button>
                     <button className="viewTimesheetsBtn">
-                        <TableOfContents/> View all Timesheets
+                        <TableOfContents/> &nbsp; View all Timesheets
                     </button>
                 </div>
 
             </div>
-            
-
-
-
-            {/* {currentTimesheet ? (
-                <div key={currentTimesheet.id}>
-                    <ul>
-                        <li>{currentTimesheet.id}</li>
-                        <li>{new Date(currentTimesheet.periodMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}</li>
-                        <li>{currentTimesheet.stage}</li>
-                        <li>Earnings</li>
-                        <li>Add Entry button</li>
-                        {currentTimesheet.adminMessage && <li>{currentTimesheet.adminMessage}</li>}
-                    </ul>
-
-                </div>
-            ) : (
-                <p>No timesheet in  progress. Create one.</p>
-            )} */}
         
         </>
     );
