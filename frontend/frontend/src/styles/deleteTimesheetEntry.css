@@ -1,0 +1,101 @@
+.deleteEntryContainer {
+    width: 100%;
+    height: 70%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
+
+.deleteEntryPanel {
+    width: min(520px, calc(100% - 48px));
+    box-sizing: border-box;
+    padding: 32px;
+    border: 2px solid rgba(245, 244, 244, 0.555);
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.363);
+}
+
+.deleteEntryEyebrow {
+    margin: 0 0 6px;
+    color: #ff7777;
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.deleteEntryPanel h2 {
+    margin: 0;
+    font-size: 1.8em;
+}
+
+.deleteEntryMessage {
+    margin: 14px 0 24px;
+    color: #c9c8c2;
+    line-height: 1.5;
+}
+
+.deleteEntryActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.deleteEntryBackBtn,
+.confirmDeleteBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid rgba(245, 244, 244, 0.65);
+    border-radius: 8px;
+    color: #ffffff;
+    background-color: transparent;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.confirmDeleteBtn {
+    border-color: #ff7777;
+    color: #ff7777;
+}
+
+.deleteEntryBackBtn:hover {
+    color: #000000;
+    background-color: #ffffff;
+}
+
+.confirmDeleteBtn:hover {
+    color: #ffffff;
+    background-color: #d93434;
+}
+
+.deleteEntryBackBtn:disabled,
+.confirmDeleteBtn:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.deleteEntryBackBtn svg,
+.confirmDeleteBtn svg {
+    width: 17px;
+    height: 17px;
+}
+
+.deleteEntryError {
+    margin: 0 0 16px;
+    color: #ff7777;
+}
+
+@media (max-width: 520px) {
+    .deleteEntryPanel {
+        padding: 24px 20px;
+    }
+
+    .deleteEntryActions {
+        flex-direction: column-reverse;
+    }
+}
