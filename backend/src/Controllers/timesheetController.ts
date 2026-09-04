@@ -35,8 +35,6 @@ const createTimesheet = async(req: Request, res: Response) => {
                 return res.status(409).json({ message: "A timesheet already exists for this month" });
             }
         }
-
-        
         return res.status(201).json({
             message: `Time sheet the the month of ${inputDate.getMonth() + 1} has been created.`,
             newTimesheet
@@ -301,6 +299,31 @@ const markPaid = async(req: Request, res: Response) => {
     }
 }
 
+const getAllAdminTimesheets = async (req: Request, res: Response) => {
+    try {
+        const timesheets = await prisma.timesheet.findMany({
+            include: {
+                timesheetEntry: true,
+                user: {
+                    select: { id: true, name: true, email: true }
+                }
+            },
+            orderBy: { periodMonth: 'desc' }
+        });
+
+        return res.status(200).json({
+            message: "All timesheets retrieved",
+            timesheets
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            error: `${e}`,
+            message: "Couldn't fetch timesheets. Something went wrong"
+        });
+    }
+}
+
 
 
 export default {
@@ -310,6 +333,7 @@ export default {
     getTimesheetById,
     submitTimesheet,
     getSubmittedTimesheets,
+    getAllAdminTimesheets,
     reviewTimesheet,
     markPaid
 }

@@ -1,5 +1,14 @@
-import { useState, useMemo, FormEvent } from "react";
+import { useState, useMemo, useEffect } from "react";
+import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/AdminDashboardPage.css";
+import { useAuth } from "../context/authContext";
+import {
+  getAllAdminTimesheets,
+  getAllCoaches,
+  markTimesheetPaid,
+  reviewTimesheet,
+} from "../lib/api";
 
 type TimesheetStatus = "Pending" | "Approved" | "Paid" | "Rejected";
 
@@ -32,6 +41,7 @@ interface Timesheet {
   status: TimesheetStatus;
   entries: TimesheetEntry[];
   reviewNote?: string;
+  submittedForReview?: boolean;
 }
 
 type View = "timesheets" | "coaches" | "create";
@@ -201,14 +211,47 @@ const EMPTY_COACH_FORM = {
 };
 
 export default function AdminDashboardPage() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading, logout: logoutUser } = useAuth();
   const [view, setView] = useState<View>("timesheets");
   const [coaches, setCoaches] = useState<Coach[]>(INITIAL_COACHES);
   const [timesheets, setTimesheets] = useState<Timesheet[]>(INITIAL_TIMESHEETS);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [coachForm, setCoachForm] = useState(EMPTY_COACH_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [selectedTimesheetId, setSelectedTimesheetId] = useState<string | null>(null);
+
+  async function fetchAdminData() {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const [timesheetResult, coachResult] = await Promise.all([
+        getAllAdminTimesheets(),
+        getAllCoaches(),
+      ]);
+      setTimesheets((timesheetResult.timesheets as ApiTimesheet[]).map(adaptTimesheet));
+      setCoaches((coachResult.coaches as ApiCoach[]).map((coach) => ({
+        ...coach,
+        id: String(coach.id),
+        phone: "Not provided",
+        joined: "",
+        active: true,
+      })));
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Unable to load admin data");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!authLoading && user?.role === "ADMIN") {
+      fetchAdminData();
+    }
+  }, [authLoading, user]);
 
   const selectedTimesheet = useMemo(
     () => timesheets.find((t) => t.id === selectedTimesheetId) ?? null,
@@ -224,7 +267,7 @@ export default function AdminDashboardPage() {
   );
 
   const awaitingReview = useMemo(
-    () => timesheets.filter((t) => t.status === "Pending").length,
+    () => timesheets.filter((t) => t.status === "Pending" && t.submittedForReview !== false).length,
     [timesheets]
   );
 
@@ -260,7 +303,7 @@ export default function AdminDashboardPage() {
     }
 
     const newCoach: Coach = {
-      id: `c${Date.now()}`,
+      id: `c${nextTimesheetRef(timesheets)}`,
       name,
       email,
       phone,
@@ -286,10 +329,39 @@ export default function AdminDashboardPage() {
     if (coach) showToast(`${coach.name} was removed.`);
   }
 
-  function updateTimesheetStatus(id: string, status: TimesheetStatus) {
-    setTimesheets((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, status } : t))
-    );
+  async function updateTimesheetStatus(id: string, status: TimesheetStatus) {
+    try {
+      const timesheetId = Number(id);
+      if (status === "Approved") await reviewTimesheet(timesheetId, "APPROVE");
+      if (status === "Rejected") await reviewTimesheet(timesheetId, "REJECT");
+      if (status === "Paid") await markTimesheetPaid(timesheetId);
+      await fetchAdminData();
+      showToast(`${id} updated to ${status}.`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Unable to update timesheet.");
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await logoutUser();
+      navigate("/");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Unable to log out.");
+    }
+  }
+
+  if (authLoading || loading) {
+    return <div className="admin admin__state">Loading admin dashboard...</div>;
+  }
+
+  if (!user || user.role !== "ADMIN") {
+    navigate("/");
+    return null;
+  }
+
+  if (loadError) {
+    return <div className="admin admin__state admin__state--error">{loadError}</div>;
   }
 
   if (selectedTimesheet) {
@@ -300,6 +372,7 @@ export default function AdminDashboardPage() {
           coach={selectedCoach}
           onBack={() => setSelectedTimesheetId(null)}
           onUpdateStatus={updateTimesheetStatus}
+          onMarkPaid={() => updateTimesheetStatus(selectedTimesheet.id, "Paid")}
         />
 
         {toast && <div className="admin__toast">{toast}</div>}
@@ -354,6 +427,7 @@ export default function AdminDashboardPage() {
           <div className="admin__stat">
             {formatRand(approvedUnpaid)} approved, unpaid
           </div>
+          <button type="button" className="admin__logout" onClick={handleLogout}>Log out</button>
         </div>
       </aside>
 
@@ -585,11 +659,13 @@ function TimesheetDetailPage({
   coach,
   onBack,
   onUpdateStatus,
+  onMarkPaid,
 }: {
   timesheet: Timesheet;
   coach: Coach | null;
   onBack: () => void;
   onUpdateStatus: (id: string, status: TimesheetStatus) => void;
+  onMarkPaid: () => void;
 }) {
   const totalDue = calculateTimesheetTotal(timesheet);
 
@@ -613,7 +689,7 @@ function TimesheetDetailPage({
               </span>
             </div>
             <p className="admin__detail-meta">
-              {timesheet.coachName} · {timesheet.period} · submitted{" "}
+              {timesheet.coachName} · {coach?.email ?? "Coach details unavailable"} · {timesheet.period} · submitted{" "}
               {timesheet.submitted}
             </p>
           </div>
@@ -677,6 +753,18 @@ function TimesheetDetailPage({
               onClick={() => onUpdateStatus(timesheet.id, "Rejected")}
             >
               Reject
+            </button>
+          </div>
+        )}
+
+        {timesheet.status === "Approved" && (
+          <div className="admin__detail-actions">
+            <button
+              type="button"
+              className="admin__button admin__button--approve"
+              onClick={onMarkPaid}
+            >
+              Mark as paid
             </button>
           </div>
         )}
@@ -770,4 +858,64 @@ function CreateCoachView({
       </form>
     </>
   );
+}
+
+interface ApiTimesheet {
+  id: number;
+  userId: number;
+  periodMonth: string;
+  submittedDate: string | null;
+  stage: "STAGING" | "SUBMITTED" | "APPROVED";
+  adminMessage: string | null;
+  paid: boolean;
+  timesheetEntry: Array<{
+    id: number;
+    date: string;
+    activityType: string;
+    description: string | null;
+    amount: number | string;
+  }>;
+  user: { id: number; name: string; email: string };
+}
+
+interface ApiCoach {
+  id: number;
+  name: string;
+  email: string;
+  bankName?: string;
+  accountType?: string;
+  accountNumber?: string;
+}
+
+function adaptTimesheet(timesheet: ApiTimesheet): Timesheet {
+  const status: TimesheetStatus = timesheet.paid
+    ? "Paid"
+    : timesheet.stage === "APPROVED"
+      ? "Approved"
+      : timesheet.stage === "SUBMITTED"
+        ? "Pending"
+          : timesheet.adminMessage
+            ? "Rejected"
+            : "Pending";
+
+  return {
+    id: String(timesheet.id),
+    coachName: timesheet.user.name,
+    period: new Date(timesheet.periodMonth).toLocaleDateString("en-ZA", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+    submitted: timesheet.submittedDate?.slice(0, 10) ?? "Not submitted",
+    hours: timesheet.timesheetEntry.length,
+    status,
+    reviewNote: timesheet.adminMessage ?? undefined,
+    submittedForReview: timesheet.stage === "SUBMITTED",
+    entries: timesheet.timesheetEntry.map((entry) => ({
+      date: entry.date.slice(0, 10),
+      activities: entry.activityType,
+      decription: entry.description ?? "No description",
+      amount: Number(entry.amount),
+    })),
+  };
 }

@@ -776,3 +776,30 @@
     grid-template-columns: 1fr;
   }
 }
+
+.admin__state {
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.admin__state--error {
+  color: var(--accent);
+}
+
+.admin__logout {
+  margin: 12px 8px 0;
+  padding: 8px 0;
+  border: 0;
+  color: var(--sidebar-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin__logout:hover {
+  color: var(--sidebar-text);
+}

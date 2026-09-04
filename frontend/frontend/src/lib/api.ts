@@ -43,6 +43,31 @@ export async function getCoachTimesheets() {
   })
 }
 
+export async function getAllAdminTimesheets() {
+  return apiRequest('/timesheet/all', {
+    method: 'GET',
+  })
+}
+
+export async function getAllCoaches() {
+  return apiRequest('/user/coaches', {
+    method: 'GET',
+  })
+}
+
+export async function reviewTimesheet(timesheetId: number, decision: 'APPROVE' | 'REJECT', adminMessage?: string) {
+  return apiRequest(`/timesheet/review/${timesheetId}`, {
+    method: 'POST',
+    body: JSON.stringify({ decision, adminMessage })
+  })
+}
+
+export async function markTimesheetPaid(timesheetId: number) {
+  return apiRequest(`/timesheet/paid/${timesheetId}`, {
+    method: 'POST',
+  })
+}
+
 export async function createTimesheet(periodMonth: string) {
   return apiRequest('/timesheet/create', {
     method: 'POST',

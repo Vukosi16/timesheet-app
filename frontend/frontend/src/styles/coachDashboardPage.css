@@ -13,6 +13,15 @@ html, body{
     flex-direction: column;
 }
 
+.pageContainer--history{
+    height: 100vh;
+    overflow: hidden;
+}
+
+.pageContainer--history .welcomeHeadingContainer{
+    flex-shrink: 0;
+}
+
 .welcomeHeadingContainer{
     display: flex;
     width: 100vw;

@@ -11,6 +11,7 @@ const router = Router();
 router.get('/timesheets', authMiddleware, timesheetController.getCoachTimesheets)
 router.get('/timesheet/:timesheetId', authMiddleware, timesheetIdParamMiddleware,timesheetController.getTimesheetById)
 router.get('/submitted', authMiddleware, adminMiddleware, timesheetController.getSubmittedTimesheets)
+router.get('/all', authMiddleware, adminMiddleware, timesheetController.getAllAdminTimesheets)
 router.post('/create', authMiddleware, createTimesheetBodyMiddleware ,timesheetController.createTimesheet);
 router.post('/review/:timesheetId', authMiddleware, adminMiddleware, timesheetIdParamMiddleware, reviewTimesheetBodyMiddleware, timesheetController.reviewTimesheet)
 router.post('/paid/:timesheetId', authMiddleware, adminMiddleware, timesheetIdParamMiddleware ,timesheetController.markPaid)

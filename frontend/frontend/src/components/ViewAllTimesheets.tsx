@@ -1,4 +1,5 @@
 import { ArrowLeft, Eye } from 'lucide-react';
+import { useState } from 'react';
 import '../styles/viewAllTimesheets.css';
 
 type ActivityType = 'TRAINING' | 'MATCH' | 'REF_KIDS' | 'REF_ADULT' | 'MISC';
@@ -34,8 +35,56 @@ function ViewAllTimesheets({
     onBack,
 }: ViewAllTimesheetsProps) {
     const allTimesheets = timesheets ?? [];
+    const [selectedTimesheet, setSelectedTimesheet] = useState<Timesheet | null>(null);
     const awaitingReview = allTimesheets.filter((timesheet) => timesheet.stage === 'SUBMITTED').length;
     const paidTimesheets = allTimesheets.filter((timesheet) => timesheet.paid).length;
+
+    const getStatus = (timesheet: Timesheet) => timesheet.paid ? 'PAID' : timesheet.stage;
+
+    if (selectedTimesheet) {
+        const totalEarnings = selectedTimesheet.timesheetEntry.reduce(
+            (total, entry) => total + Number(entry.amount),
+            0
+        );
+
+        return (
+            <section className="allTimesheetsContainer">
+                <button className="allTimesheetsBackBtn" type="button" onClick={() => setSelectedTimesheet(null)}>
+                    <ArrowLeft /> Back to all timesheets
+                </button>
+                <div className="timesheetDetailHeader">
+                    <div>
+                        <p className="allTimesheetsEyebrow">Timesheet details</p>
+                        <h2>{new Date(selectedTimesheet.periodMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
+                    </div>
+                    <span className={`timesheetStatus ${getStatus(selectedTimesheet).toLowerCase()}`}>
+                        {getStatus(selectedTimesheet)}
+                    </span>
+                </div>
+                <div className="timesheetDetailSummary">
+                    <span>{selectedTimesheet.timesheetEntry.length} entries</span>
+                    <strong>R{totalEarnings}</strong>
+                </div>
+                <div className="allTimesheetsTableContainer timesheetDetailTableContainer">
+                    <table className="allTimesheetsTable">
+                        <thead>
+                            <tr><th>Date</th><th>Activity</th><th>Description</th><th>Amount</th></tr>
+                        </thead>
+                        <tbody>
+                            {selectedTimesheet.timesheetEntry.map((entry) => (
+                                <tr key={entry.id}>
+                                    <td>{new Date(entry.date).toLocaleDateString('en-GB')}</td>
+                                    <td>{entry.activityType}</td>
+                                    <td>{entry.description || 'No description'}</td>
+                                    <td>R{entry.amount}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="allTimesheetsContainer">
@@ -94,14 +143,14 @@ function ViewAllTimesheets({
                                         </strong>
                                     </td>
                                     <td>
-                                        <span className={`timesheetStatus ${timesheet.stage.toLowerCase()}`}>
-                                            {timesheet.stage}
+                                        <span className={`timesheetStatus ${getStatus(timesheet).toLowerCase()}`}>
+                                            {getStatus(timesheet)}
                                         </span>
                                     </td>
                                     <td>{timesheet.timesheetEntry.length}</td>
                                     <td>R{totalEarnings}</td>
                                     <td>
-                                        <button className="viewTimesheetBtn" type="button">
+                                        <button className="viewTimesheetBtn" type="button" onClick={() => setSelectedTimesheet(timesheet)}>
                                             <Eye /> View
                                         </button>
                                     </td>

@@ -128,9 +128,13 @@ function CoachDashboardPage() {
 
         try {
             await createEntry(timesheedId, date, activityType, description, amount)
-            fetchTimesheets()
+            await fetchTimesheets()
             alert("Timesheet entry added")
             setaddEntryToggle(false)
+            setentryDate('')
+            setSelectedValue('TRAINING')
+            setentryDesc('')
+            setmiscAmount(undefined)
         } catch (error) {
             alert("Error in adding timesheet "+ error)
         }
@@ -158,7 +162,7 @@ function CoachDashboardPage() {
 
     return (
         <>
-            <div className="pageContainer">
+            <div className={`pageContainer ${viewAllTimesheets ? 'pageContainer--history' : ''}`}>
 
                 <div className="welcomeHeadingContainer">
 
@@ -336,11 +340,11 @@ function CoachDashboardPage() {
                                 type="date"
                                 value={entryDate}
                                 onChange={(event) => setentryDate(event.target.value)}
+                                required
                             />
 
                             <label htmlFor="activityType">Activity type</label>
-                            <select id="activityType" defaultValue="Training" value={selectedValue} onChange={handleValueChange}>
-                                <option value="" disabled>Select an activity</option>
+                            <select id="activityType" value={selectedValue} onChange={handleValueChange} required>
                                 <option value="TRAINING">Training</option>
                                 <option value="MATCH">Match</option>
                                 <option value="REF_KIDS">Ref Kids</option>
@@ -356,10 +360,11 @@ function CoachDashboardPage() {
 
                             {selectedValue === 'MISC' && 
                             <>
-                                <label htmlFor="entryDescription">Amount</label>
+                                <label htmlFor="amount">Amount</label>
                                 <input type="number" id="amount" 
                                     value={miscAmount}
                                     onChange={(event) => setmiscAmount(Number(event.target.value))}
+                                    required
                                 />
                             </>
                             
@@ -381,7 +386,7 @@ function CoachDashboardPage() {
 
 
 
-                <div className="timesheetViewandcreation">
+                {!viewAllTimesheets && <div className="timesheetViewandcreation">
                     <button className="createTimesheetBtn"
                         onClick={() => setcreateTimesheetToggle(true)}
                     >
@@ -390,7 +395,7 @@ function CoachDashboardPage() {
                     <button className="viewTimesheetsBtn" onClick={() => setViewAllTimesheets(true)}>
                         <TableOfContents /> &nbsp; View all Timesheets
                     </button>
-                </div>
+                </div>}
                 </>}
 
             </div>
